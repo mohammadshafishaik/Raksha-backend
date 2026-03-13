@@ -1,20 +1,24 @@
 {
-  "name": "backend",
+  "name": "raksha",
   "version": "1.0.0",
-  "description": "",
+  "description": "Raksha Safety App — Monorepo (backend + frontend)",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
+    "dev": "npx nodemon server.js",
+    "frontend": "cd frontend && npx expo start",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
+  "keywords": ["safety", "sos", "location"],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
     "bcryptjs": "^2.4.3",
+    "cors": "^2.8.6",
     "dotenv": "^17.2.0",
     "express": "^5.1.0",
+    "express-rate-limit": "^8.3.1",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.16.3"
   }

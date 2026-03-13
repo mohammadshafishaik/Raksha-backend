@@ -1,38 +1,61 @@
 // backend/server.js
 const express = require('express');
 const dotenv = require('dotenv');
-
-console.log('1: Starting server.js...'); // DEBUG
-const connectDB = require('./config/db');
+const cors = require('cors');
+const rateLimit = require('express-rate-limit');
 
 // Load environment variables from .env file
 dotenv.config();
 
-console.log('2: Connecting to the database...'); // DEBUG
+const connectDB = require('./config/db');
+
 // Connect to the database
 connectDB();
-console.log('3: Database connection initiated.'); // DEBUG
 
 const app = express();
 const port = process.env.PORT || 5000;
 
+// CORS — allow requests from Expo/React Native clients and your frontend URL
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',')
+  : ['http://localhost:3000', 'http://localhost:8081', 'exp://'];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, curl, etc.)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.some(o => origin.startsWith(o))) return callback(null, true);
+    return callback(new Error('Not allowed by CORS'));
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'x-auth-token'],
+}));
+
+// Rate limiting — protect against brute-force attacks
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 30,
+  message: { msg: 'Too many requests, please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // Middleware to parse JSON bodies
 app.use(express.json());
 
-console.log('4: Defining routes...'); // DEBUG
 // Define Routes
-app.use('/api/users', require('./routes/user'));
+app.use('/api/users', authLimiter, require('./routes/user'));
 app.use('/api/safety', require('./routes/safety'));
 app.use('/api/dangerzones', require('./routes/dangerZones'));
-app.use('/api/notifications', require('./routes/notifications')); // NEW: Notifications routes
+app.use('/api/notifications', require('./routes/notifications'));
+app.use('/api/incidents', require('./routes/incidents'));
 
-// Basic test route
+// Health check route
 app.get('/', (req, res) => {
-  res.send('API is running...');
+  res.json({ msg: 'Raksha API is running...', version: '2.0.0' });
 });
 
-console.log('5: Starting server listening...'); // DEBUG
 // Start the server
 app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
+  console.log(`Raksha backend server running on port ${port}`);
 });
