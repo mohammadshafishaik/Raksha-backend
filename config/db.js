@@ -5,12 +5,7 @@ const mongoose = require('mongoose'); // Import mongoose
 const connectDB = async () => {
   try {
     // Attempt to connect to MongoDB using the URI from .env
-    const conn = await mongoose.connect(process.env.MONGO_URI, {
-      useNewUrlParser: true,       // Use the new URL parser
-      useUnifiedTopology: true,    // Use the new server discovery and monitoring engine
-      // useCreateIndex: true,     // Deprecated in newer Mongoose versions
-      // useFindAndModify: false   // Deprecated in newer Mongoose versions
-    });
+    const conn = await mongoose.connect(process.env.MONGO_URI);
 
     console.log(`MongoDB Connected: ${conn.connection.host}`); // Log success message
   } catch (error) {
